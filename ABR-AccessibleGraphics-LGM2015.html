@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html><head>
+    <title>Accessible Graphics on the Web (and beyond)</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width">
+    <style media="all">
+        h1, h2, h3, header, footer, p {
+            text-align: center;
+        }    
+        p {
+            font-style: italic;
+        }
+        li {
+            margin-bottom: 0.5em;
+        }
+        li li {
+            margin-bottom: 0.1em;
+        }
+        ul, ol {
+            margin: 0.25em 0;
+        }
+        header li, footer li {
+            display: block;
+        }
+        header li li, footer li li{
+            font-size: inherit;
+            margin: 0.5em auto;
+        }
+        header ul, footer ul {
+            display: block;
+            padding: 0;
+        }
+        footer, section {
+            position: relative;
+            counter-increment: slide;
+        }
+        footer::before, section::before {
+            content: counter(slide);
+            
+            display: block;
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 0.5em;
+            height: 1em;
+            width: 1em;
+            color: gray;
+        }
+    </style>
+    <style media="print">
+        header, section, footer {
+            border-bottom: double dimgray 5px;
+            padding: 1em 0;
+            break-inside: avoid;
+        }
+        a:link, a:visited {
+           color: inherit;
+           text-decoration: none;
+        }
+        a:link::after {
+            content: " (" attr(href) ")";
+        }
+        a.literal::after {
+            content: normal;
+        }
+    </style>
+    <style media="screen">
+        body {
+            background-color: #666;
+            margin: 0; padding: 0;
+            font-family: Verdana, Tahoma, sans-serif;
+        }
+        header, section, footer {
+            display: block;
+            box-sizing: border-box;
+            width: calc(96vw - 20px);
+            min-height: 96vh;
+            padding: 1em;
+            border-radius: 1em;
+            margin: 2vh 2vw;
+            background-image: linear-gradient(to bottom right, lightYellow 20%, darkSeaGreen);
+            box-shadow: 0.2em 0.3em 0.5em 0 black;
+        }
+        ul, ol {
+            padding-left: 3em;
+        }
+        @media (min-height: 40em) {
+            header, section, footer {
+                height: 96vh;
+            } 
+            section > ul, section > ol, footer > ul {
+                height: calc(100% - 5em);
+                overflow: auto;
+            }
+            header ul {
+                height: calc(100% - 10em);
+                overflow: auto;
+            }
+        }
+        @media (min-width: 30em) {
+            :root {
+                font-size: 150%;
+            }
+            li li {
+                font-size: 80%;
+            }
+        }
+        @media (min-width: 40em) AND (min-height: 40em) {
+            :root {
+                font-size: 200%;
+            }
+        }
+        .control {
+            display: block;
+            position: fixed;
+            background-color: rgba(100%, 100%, 75%, 0.5); 
+            font-size: 80%;
+            padding: 0.25em 0.5em;
+            bottom: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        .control input[type="checkbox"] {
+            height: 1em;
+            width: 1em;
+            border-radius: 25%;
+            box-sizing: border-box;
+            font-size: inherit;
+        }
+        :not(a):focus {
+            outline: none;
+            border-right: solid seaGreen;
+        }
+    </style>
+    <style id="interactive-styles" disabled="disabled" media="only none">
+        :focus ~ li, :focus ~ ul, :focus ~ ol, 
+        .contains-focus ~ li, .contains-focus ~ ul, .contains-focus ~ ol {
+            opacity: 0.05;
+        }
+        li ul, li ol {
+            height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: opacity 0.5s;
+        }
+        li:focus ul, .contains-focus > ul,
+        li:focus ol, .contains-focus > ol {
+            height: auto;
+            opacity: 1;
+        }
+    </style>                
+</head><body>
+    
+    <header>
+        <h1>Accessible Graphics on the Web</h1>
+        <h2>(and beyond)</h2>
+        <ul>
+            <li>Amelia Bellamy-Royds</li>
+            <li>Libre Graphics Meeting 2015</li>
+            <li>30 April 2015</li>
+        </ul>
+    </header>
+    
+    <section>
+        <h2>What does accessibility mean?</h2>
+        <ul>
+            <li>The user can understand the information presented</li>
+            <li>The user can control any interactive functions</li>
+            <li>Regardless of sensory limitations, mobility limitations, cognitive limitations</li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>How does accessibility work on the web?</h2>
+        <ul>
+            <li>For accessibility tools such as screen readers, content must be machine-readable
+                <ol>
+                    <li>Web pages contain markup describing the meaning &amp; function of content</li>
+                    <li>The browser processes it &amp; interacts with OS accessibility API</li>
+                    <li>Accessibility tools interface with the accessibility API</li>
+                </ol>
+            </li>
+            <li><em>But,</em> many people with limitations do not use these tools, so the web page must stand on its own
+                <ul>
+                    <li>Color blindness</li>
+                    <li>Low vision (just use browser zoom, etc.)</li>
+                    <li>Hearing problems</li>
+                    <li>Cognitive/neurological differences</li>
+                </ul>
+            </li>            
+            <li>For user input, most specialized devices act like keyboard or mouse 
+                <ul>
+                    <li>But often slower</li>
+                    <li>But often less precise</li>
+                    <li>Touchpads &amp; onscreen keyboards make these universal issues</li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>Two sides to the story…</h2>
+        <ul>
+            <li>Are your software tools accessible?
+                <ul>
+                    <li>Can anyone who want to create a graphic use your tool?</li>
+                    <li>Can they understand it?</li>
+                    <li>Can they make it do what they want?</li>
+                </ul>            
+            </li>
+            <li>Do your tools create accessible graphics?
+                <ul>
+                    <li>Can you automatically make things more accessible?</li>
+                    <li>Can you prompt the user to add more accessibility support?</li>
+                </ul>            
+            </li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>Can you be more specific?</h2>
+        <ul>
+            <li>Use the Web Content Accessibility Guidelines (WCAG 2.0)
+                <ul>
+                    <li><a href="http://www.w3.org/TR/WCAG20/">http://www.w3.org/TR/WCAG20/</a>
+                    </li>
+                    <li>Designed for the web, but applicable to all software</li>
+                </ul>
+            </li>
+            <li>Guidelines == broad goals</li>
+            <li>Conformance standards == specific requirements
+                <ul>
+                    <li>Level A: Avoid the worst problems</li>
+                    <li>Level AA: Avoid more tricky issues</li>
+                    <li>Level AAA: Make things easy to use</li>
+                </ul>
+            </li>
+            <li>Guidelines &amp; standards are technology-agnostic
+                <ul>
+                    <li>Specific techniques are available for HTML, PDF, other web documents
+                    </li>
+                </ul>
+            </li>
+            <li>For designing software that creates accessible content
+                <ul>
+                    <li>WCAG authoring tool guidelines (somewhat out of date)</li> 
+                    <li><a href="http://www.w3.org/TR/ATAG10/">http://www.w3.org/TR/ATAG10/</a></li>
+                    <li>Primarly HTML-focused, but might give you some ideas</li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>WCAG 2: Four Categories</h2>
+        <ol>
+            <li>Perceivable</li>
+            <li>Operable</li>
+            <li>Understandable</li>
+            <li>Robust</li>
+        </ol>
+    </section>
+    
+    <section>
+        <h3>Perceivable</h3> 
+        <p>Users can receive information, regardless of sensory limitations</p>
+        <ol>
+            <li>Text alternatives for image, video, and audio (and text stored within images!)</li>
+            <li>Captions or other formats for audio, video, and animation (time-based media)</li>
+            <li>Provide logical structure independent of visual layout</li>
+            <li>Effectively contrast foreground vs background graphics and audio</li>
+        </ol> 
+    </section>
+    
+    <section>
+        <h3>Operable</h3> 
+        <p>Users can interact with content, regardless of input device</p>
+        <ol>
+            <li>All functions keyboard operable</li>
+            <li>Avoid time-based limitations</li>
+            <li>Do not create epilipsy seizure triggers (flashing/blinking content)</li>
+            <li>Provide effective navigation tools</li>
+        </ol>     
+    </section>
+    
+    <section>
+        <h3>Understandable</h3> 
+        <p>The content &amp; function is easy to understand, regardless of how a user perceives &amp; interacts with it</p>
+        <ol>
+            <li>Clearly identify the language of text, and offer interpretation hints</li>
+            <li>Avoid sudden/unexpected changes in the content as the user navigates or fills in input</li>
+            <li>Make the purpose of user input clear, and help users avoid and correct mistakes</li>
+        </ol> 
+    </section>
+    
+    <section>
+        <h3>Robust</h3> 
+        <p>Content works in many software/input environments, even after accessibility alterations</p>
+        <ol>
+            <li>Maximize compatibility, ensure optimum fallback, make important information machine-accessible</li>
+        </ol> 
+    </section>
+    
+    <section>
+        <h2>Can <em>graphics</em> be accessible?</h2>
+        <ul>
+            <li>What are you trying to communicate?
+            </li>
+            <li>Brand?</li>
+            <li>Data?</li>
+            <li>Structure?</li>
+            <li>Mood?</li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>SVG for Accessible Graphics</h2>
+        <ul>
+            <li>Vector graphics == good resolution when magnified</li>
+            <li>XML == structured content</li>
+            <li>Visible text stored as text</li>
+            <li>Alternative text within the main document</li>
+            <li>Alternative text associated with sub-components of graphic</li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>Current Limitations of SVG Accessibility</h2>
+        <ul>
+            <li>XML text not always accessible through modern (SVG-supporting) web browsers
+            </li>
+            <li>Font &amp; text problems == text as path</li>
+            <li>Interactive components difficult to make keyboard accessible</li>
+            <li>The meaning of text formatting and grouping structure is not accessible </li>
+            <li>No easy way to navigate complex graphical structures (e.g., data charts)</li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>Improving Accessible SVG</h2>
+        <ul>
+            <li>Use ARIA (Accessible Rich Internet Applications) attributes
+            </li>
+            <li>Support keyboard navigation
+            </li>
+            <li>Allow multi-lingual alternative text
+            </li>
+            <li>Allow greater user style customization
+            </li>
+        </ul>
+    </section>
+    
+    <section>
+        <h3>Using ARIA</h3>
+        <ul>
+            <li><code>role</code> attributes defines what content is 
+                <ul>
+                    <li>heading</li> 
+                    <li>list item</li> 
+                    <li>clickable button</li></ul>
+            </li>
+            <li>property attributes define additional information for navigation 
+                <ul>
+                    <li>label</li> 
+                    <li>heading level</li> 
+                </ul>
+            </li>
+            <li>state attributes define current status of interactive components 
+                <ul>
+                    <li>a checkbox is checked</li>
+                    <li>a collapsible section is expanded &amp; visible</li>
+                </ul>
+            </li>
+            <li><strong>Limitation</strong>: ARIA was defined for standard web page layouts and widgets, not a lot of support for graphics yet</li>
+            <li>The SVG Accessibility Task Force is trying to come up with more roles for charts &amp; graphics</li>
+        </ul>  
+    </section>
+    
+    <section>
+        <h3>Better keyboard navigation</h3>
+        <ul>
+            <li>SVG 2 will have basic <code>tabIndex</code> support similar to HTML</li>
+            <li>More complex navigation being considered
+                <ul>
+                    <li>2D scanning</li>
+                    <li>Tree traversal</li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+    
+    <section>
+        <h3>Multi-lingual alternative text</h3>
+        <ul>
+            <li>Currently, only one text alternative is possible per element</li>
+            <li>SVG 2 will allow multiple <code>&lt;title&gt;</code> and <code>&lt;desc&gt;</code> elements distinguished by language code</li>
+            <li>Backwards compatible: existing browsers will use first element</li>
+        </ul>    
+    </section>
+    
+    <section>
+        <h3>User style overrides</h3>
+        <ul>
+            <li>Easy to implement, difficult to implement effectively</li>
+            <li>Many possible alterations could improve accessibility:
+                <ul>
+                    <li>larger fonts</li> 
+                    <li>thicker lines</li> 
+                    <li>higher contrast</li>
+                    <li>color replaced with texture</li>
+                </ul>
+            </li>
+            <li><em>But,</em> how to implement so that meaning of graphic is not lost?</li>
+            <li>ARIA might help distinguish information from decoration</li>
+        </ul>
+    </section>
+    
+    <section>
+        <h2>Making Other Graphics Accessible</h2>
+        <ul>
+            <li>In the web browser
+                <ul>
+                    <li>For HTML+CSS, use semantic markup where possible, ARIA where required</li>
+                    <li>For HTML 5 Canvas graphics, use a structured HTML+ARIA shadow DOM tree</li>
+                    <li>Wherever possible, provide content in multiple formats (e.g., data table + data chart)</li>
+                </ul>                
+            </li>
+            <li>In other software
+                <ul>
+                    <li>Need to directly communicate with OS accessibility API</li>
+                    <li>For XML-based formats, consider using ARIA</li>                    
+                </ul>
+            </li>
+            <li>New ARIA roles and other attributes will help with all XML/HTML markup graphics</li>
+        </ul>
+    </section>
+    
+<!-- Template
+    <section>
+        <h2></h2>
+        <ul>
+            <li>
+            </li>
+        </ul>
+    </section>
+-->
+    
+    <footer>
+        <h2>About Me</h2>
+        <ul>
+            <li>Amelia Bellamy-Royds</li>
+            <li>B.Sc., M.J., SVG Evangelist</li>
+            <li>amelia.bellamy.royds@gmail.com</li>
+            <li><a class="literal" href="https://twitter.com/ameliasbrain">@AmeliasBrain</a></li>
+            <li style="padding-top: 2em">I write Books!</li>
+            <li><a href="http://shop.oreilly.com/product/0636920032335.do"><cite>SVG Essentials, 2nd Edition</cite></a></li>
+            <li>Coming Soon: <cite>Using SVG with CSS3 and HTML5</cite></li>
+        </ul>
+    </footer>
+    <script>
+(function(){
+    var initialized = false;  
+    var interactiveStyles = document.getElementById("interactive-styles");
+    var headingSelector = "h1, h2, h3", 
+        pointsSelector = "section > ul > li, section > ol > li, footer > ul > li";
+    
+    var toggleLabel = document.createElement("label");
+    toggleLabel.setAttribute("class", "control");
+    document.body.id ="body";
+    toggleLabel.setAttribute("aria-controls", "body");
+    toggleLabel.textContent = "Tab to reveal";
+    
+    var toggle = document.createElement("input");
+    toggle.setAttribute("type", "checkbox");
+    toggle.addEventListener("change", toggleTabControl);
+    toggleLabel.insertBefore(toggle, null);
+    
+    document.body.insertBefore(toggleLabel, document.body.firstChild);
+    
+    function addTabIndex(selector) {
+        var points = document.querySelectorAll(selector);
+        for (var i=0, n=points.length; i<n; i++) {
+            points[i].setAttribute("tabIndex", 0);
+        }
+        return points;
+    }
+    function removeTabIndex(selector) {        
+        var points = document.querySelectorAll(selector);
+        for (var i=0, n=points.length; i<n; i++) {
+            points[i].removeAttribute("tabIndex");
+        }
+        return points;
+    }
+    
+    //add tabIndex to headings
+    //scroll slide into place whenever heading gets focus
+    var headings = addTabIndex(headingSelector);
+    for (var i=0, n=headings.length; i<n; i++){
+        headings[i].addEventListener("focus", scrollSlide);
+    }
+    
+    function toggleTabControl(e){
+        
+        if (!e.target.checked){
+            interactiveStyles.setAttribute("disabled", "disabled");
+            interactiveStyles.setAttribute("media", "only none"); 
+                //because "disabled" doesn't work!
+            document.body.insertBefore(interactiveStyles, null); //force refresh
+            
+            //remove tabIndex from points
+            removeTabIndex(pointsSelector);
+            return;
+        }
+        
+        //add tabIndex to bullet points
+        addTabIndex(pointsSelector);
+        
+        if (!initialized) {
+
+            //ensure that focusing links doesn't mess up focus styles
+            var links = document.getElementsByTagName("a");
+            for (var i=0, n=links.length; i<n; i++) {
+                links[i].addEventListener("focus", focusIn);
+                links[i].addEventListener("blur", focusOut);
+            }
+            initialized = true;
+        }
+        
+        interactiveStyles.removeAttribute("disabled");
+        interactiveStyles.setAttribute("media", "screen");
+        document.body.insertBefore(interactiveStyles, null); //force refresh
+    }
+    function focusIn(e){
+        var p = e.target.parentElement;
+        while ((p.tagName.toLowerCase() != "section") && 
+               (p != document.documentElement)) {
+            p.classList.add("contains-focus");
+            p = p.parentElement;
+        }
+    }
+    function focusOut(e){
+        var p = e.target.parentElement;
+        while ((p.tagName.toLowerCase() != "section") && 
+               (p != document.documentElement)) {
+            p.classList.remove("contains-focus");
+            p = p.parentElement;
+        }
+    }
+    function scrollSlide(e){
+        scrollTo(window.scrollX, e.target.parentElement.offsetTop - 10);
+    }
+})();
+    </script>
+</body></html>
