@@ -1,6 +1,6 @@
 # responsive-svg-notes
 
-Presentation notes for my talk on accessibility in graphics (primarily SVG) at [Libre Graphics Meeting 2015](http://libregraphicsmeeting.org/2015/program/) on 12 March 2015.  [You can use RawGit to view online](https://cdn.rawgit.com/AmeliaBR/accessible-graphics-notes/master/ABR-AccessibleGraphics-LGM2015.html).
+Presentation notes for my talk on accessibility in graphics (primarily SVG) at [Libre Graphics Meeting 2015](http://libregraphicsmeeting.org/2015/program/) on 12 March 2015.  [View online](http://ameliabr.github.io/accessible-graphics-notes/ABR-AccessibleGraphics-LGM2015.html).
 
 __________________________________
 
